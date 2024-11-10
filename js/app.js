@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let gameState = Array(9).fill(null);
   let currentPlayer = "X";
   let vsAI = true;
-  let aiLevel = "hard";
+  let aiLevel = "easy";
 
   //Crear el tablero de forma dinámica
   function initBoard() {
@@ -43,13 +43,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  //Restart
-  restart.addEventListener("click", () => {
-    gameState = Array(9).fill(null);
-    currentPlayer = "X";
-    initBoard();
-  });
-
   //Chequear ganador
   function checkWinner() {
     const winPatterns = [
@@ -72,6 +65,8 @@ document.addEventListener("DOMContentLoaded", () => {
     let move;
     if (aiLevel === "easy") {
       move = getRandomMove();
+    } else if (aiLevel === "intermediate") {
+      move = getIntermediateMove();
     } else if (aiLevel === "hard") {
       move = getBestMove();
     }
@@ -97,6 +92,43 @@ document.addEventListener("DOMContentLoaded", () => {
       .map((cell, index) => (cell === null ? index : null))
       .filter((index) => index !== null);
     return availableMoves.length > 0
+      ? availableMoves[Math.floor(Math.random() * availableMoves.length)]
+      : null;
+  }
+
+  function getIntermediateMove() {
+    for (let i = 0; i < gameState.length; i++) {
+      if (gameState[i] === null) {
+        gameState[i] = "O";
+        if (checkWinnerForMinimax() === "O") {
+          gameState[i] = null;
+          return i;
+        }
+        gameState[i] = "X";
+        if (checkWinnerForMinimax() === "X") {
+          gameState[i] = null;
+          return i;
+        }
+        gameState[i] = null;
+      }
+    }
+    if (gameState[4] === null) return 4;
+
+    const corners = [0, 2, 6, 8];
+    const availableCorners = corners.filter(
+      (index) => gameState[index] === null
+    );
+    if (availableCorners.length > 0) {
+      return availableCorners[
+        Math.floor(Math.random() * availableCorners.length)
+      ];
+    }
+
+    //Movimiento aleatorio
+    const availableMoves = gameState
+      .map((cell, index) => (cell === null ? index : null))
+      .filter((index) => index !== null);
+    return availableCorners.length > 0
       ? availableMoves[Math.floor(Math.random() * availableMoves.length)]
       : null;
   }
@@ -250,6 +282,18 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     return null;
   }
+
+  window.setAiLevel = (level) => {
+    aiLevel = level;
+    alert(`Dificultad seteade en ${aiLevel}`);
+  }
+
+  //Restart
+  restart.addEventListener("click", () => {
+    gameState = Array(9).fill(null);
+    currentPlayer = "X";
+    initBoard();
+  });
 
   //Init
   initBoard();
